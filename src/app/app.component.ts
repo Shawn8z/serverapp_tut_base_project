@@ -1,7 +1,8 @@
 import { OnInit } from '@angular/core';
 import { Component } from '@angular/core';
-import { catchError, map, Observable, of, startWith } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, startWith } from 'rxjs';
 import { DataState } from './enum/data-state.enum';
+import { Status } from './enum/status.enum';
 import { AppState } from './interface/app-state';
 import { CustomResponse } from './interface/custom-response';
 import { ServerService } from './service/server.service';
@@ -11,16 +12,28 @@ import { ServerService } from './service/server.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
+
+
 export class AppComponent implements OnInit {
 
   appState$: Observable<AppState<CustomResponse>>;
+  readonly DataState = DataState;
+  readonly Status = Status;
+  private filterSubject = new BehaviorSubject<string>('');
+  private dataSubject = new BehaviorSubject<CustomResponse>(null);
+  
+
+  filterStatus$ = this.filterSubject.asObservable();
+
 
   constructor(private serverService: ServerService) { }
 
   ngOnInit(): void {
+    
     this.appState$ = this.serverService.servers$
       .pipe(
         map(response => {
+          this.dataSubject.next(response);
           return {
             dataState: DataState.LOADED_STATE,
             appData: response
@@ -31,6 +44,26 @@ export class AppComponent implements OnInit {
           return of({ dataState: DataState.ERROR_STATE, error: error })
         })
       )
+  }
 
+  pingServer(ipAddress: string): void {
+    this.filterSubject.next(ipAddress);
+    this.appState$ = this.serverService.ping$(ipAddress)
+      .pipe(
+        map(response => {
+          this.dataSubject.value.data.servers[
+            this.dataSubject.value.data.servers.findIndex(server => 
+              server.id === response.data.server.id)
+          ]
+          return {
+            dataState: DataState.LOADED_STATE,
+            appData: response
+          }
+        }),
+        startWith({ dataState: DataState.LOADED_STATE, appData: this.dataSubject.value }),
+        catchError((error: string) => {
+          return of({ dataState: DataState.ERROR_STATE, error: error })
+        })
+      )
   }
 }
