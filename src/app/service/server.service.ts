@@ -47,7 +47,7 @@ export class ServerService {
   );
 
   filter$ = ( status: Status, response: CustomResponse ) => <Observable<CustomResponse>>
-  new Observable<CustomResponse>(
+  new Observable<CustomResponse> (
     suscriber => {
       console.log(response);
       suscriber.next(
