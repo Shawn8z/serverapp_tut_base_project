@@ -5,7 +5,8 @@ import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
-// import { NotificationModule } from './notification.module';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NotificationModule } from './notification.module';
 
 @NgModule({
   declarations: [
@@ -16,6 +17,8 @@ import { FormsModule } from '@angular/forms';
     BrowserAnimationsModule,
     HttpClientModule,
     FormsModule,
+    NgbModule,
+    NotificationModule
   ],
   providers: [],
   bootstrap: [AppComponent]
